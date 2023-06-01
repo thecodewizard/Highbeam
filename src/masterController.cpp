@@ -5,6 +5,7 @@
 
 #include "tef/aurora/properties.h"
 #include "tef/aurora/effects/rainbowEffect.h"
+#include "Effect Driver Project/Eyes.h"
 
 
 TEF::Aurora::MasterController::MasterController()
@@ -15,7 +16,7 @@ TEF::Aurora::MasterController::~MasterController()
 {
 }
 
-bool TEF::Aurora::MasterController::Start()
+bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 {
 	// Setup all our lovely voice commands
 	SetupVoiceCommands();
@@ -29,38 +30,57 @@ bool TEF::Aurora::MasterController::Start()
 	if (TEF::Aurora::Properties::GetProperty<bool>("tail", "enabled").value_or(false))
 	{
 		if (!StartTail()) return false;
-		m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(3));
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("buttons", "enabled").value_or(false))
 	{
-		if (!StartButtons()) return false;
+		if (!StartButtons())
+		{
+			m_headset.AddSpeech("Master controller failed to start button system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("battery", "enabled").value_or(false))
 	{
-		if (!StartBattery()) return false;
+		if (!StartBattery())
+		{
+			m_headset.AddSpeech("Master controller failed to start battery system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("fuse", "enabled").value_or(false))
 	{
-		if (!StartFuse()) return false;
+		if (!StartFuse())
+		{
+			m_headset.AddSpeech("Master controller failed to start fuse system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("speech", "enabled").value_or(false))
 	{
-		if (!StartSpeech()) return false;
+		if (!StartSpeech())
+		{
+			m_headset.AddSpeech("Master controller failed to start speech recognition system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("fadecandy", "enabled").value_or(false))
 	{
-		if (!StartEffectController()) return false;
+		if (!StartEffectController())
+		{
+			m_headset.AddSpeech("Master controller failed to start effect controller system");
+			return false;
+		}
 	}
 
-
-	StartCLI();
+	if (cliEnabled)
+		StartCLI();
 
 	for (Runnable* runnable : m_connectedRunnable)
 	{
@@ -68,12 +88,11 @@ bool TEF::Aurora::MasterController::Start()
 		runnable->Run();
 	}
 
-	m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	m_headset.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	std::this_thread::sleep_for(std::chrono::seconds(3));
 
-
 	spdlog::info("Master controller started successfully");
+
 
 	return true;
 }
@@ -81,11 +100,21 @@ bool TEF::Aurora::MasterController::Start()
 bool TEF::Aurora::MasterController::StartEffectController()
 {
 
-	if (!m_effectRunner.Connect("localhost"))
+	int tries = 0;
+	while ((m_effectRunner.Connect("localhost", &m_smartFuse) == false) && tries < 10)
+	{
+		spdlog::error("failed to connect to effect runner, retrying ({})", tries);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		++tries;
+	}
+
+	if (tries >= 10)
 	{
 		spdlog::error("failed to connect to effect runner");
 		return false;
 	}
+
+	m_effectRunner.AddEffect(std::make_shared<Eyes>(&m_effectRunner.m_harness));
 
 	m_connectedRunnable.emplace_back(&m_effectRunner);
 
@@ -319,14 +348,16 @@ bool TEF::Aurora::MasterController::ClearFault()
 
 bool TEF::Aurora::MasterController::Report(Error e)
 {
+	/* this is a bad idea
 	if (e.level == ErrorLevel::Critical && !m_fault)
 	{
 		CriticalFault();
 		m_faultError = e;
 		GetNotifier()->AddSpeech("Critical Shutdown in effect");
+		GetNotifier()->AddSpeech(m_faultError.str());
 	}
-
-	GetNotifier()->AddSpeech(m_faultError.str());
+	*/
+	GetNotifier()->AddSpeech(e.str());
 
 	return false;
 }

@@ -14,8 +14,15 @@ int main(int argc, char** argv)
 	spdlog::set_level(spdlog::level::debug);
 
 	TEF::Aurora::MasterController mc;
-	mc.Start();
-	mc.Spin();
+
+	// if there are no args, then enable the cli
+	bool cliEnabled = argc == 1;
+
+	bool success = mc.Start(cliEnabled);
+	if(success)
+		mc.Spin();
+	else
+		std::this_thread::sleep_for(std::chrono::seconds(5)); // pause for a moment
 
 	return 1;
 }

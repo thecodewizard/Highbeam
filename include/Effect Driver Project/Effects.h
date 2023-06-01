@@ -44,7 +44,7 @@ public:
 			});
 
 		SetMask(ringMask);
-								    
+
 		auto rainbowTexture = std::make_shared<RadialRainbowTexture>(harness, center, y_axis);
 
 		SetTexture(rainbowTexture);
@@ -56,6 +56,13 @@ private:
 class GroupSolid : public Effect
 {
 public:
+	GroupSolid(Harness* harness, timestamp start, duration dur, std::string group, HSV hsv = WHITE)
+		: Effect(harness, start, start + dur)
+	{
+		SetTexture(std::make_shared<SolidTexture>(harness, hsv));
+		SetMask(std::make_shared<GroupMask>(harness, group));
+	}
+
 	GroupSolid(Harness* harness, timestamp start, timestamp end, std::string group, HSV hsv = WHITE)
 		: Effect(harness, start, end)
 	{
@@ -79,7 +86,7 @@ public:
 		auto rainbowTexture = std::make_shared<RadialRainbowTexture>(harness, center, ax);
 
 		rainbowTexture->AddDriver([rainbowTexture, start, end, cycles](timestamp t) {
-			Ease<float>(&rainbowTexture->m_offset, t, 0.0f, cycles, start, end);
+			Ease<float>(&rainbowTexture->m_offset, t, 0.0f, -cycles, start, end);
 			});
 
 		SetTexture(rainbowTexture);
@@ -91,7 +98,7 @@ private:
 class DimmerEffect : public Effect
 {
 public:
-	DimmerEffect(Harness* harness, timestamp start, duration dur, float dimmer=0.0f) :
+	DimmerEffect(Harness* harness, timestamp start, duration dur, float dimmer = 0.0f) :
 		Effect(harness, start, start + dur), m_dimmer(dimmer)
 	{
 	}
@@ -106,6 +113,17 @@ public:
 	}
 
 	float m_dimmer;
+};
+
+
+class EmptyEffect : public Effect
+{
+public:
+	EmptyEffect(Harness* harness, timestamp start, timestamp end) :
+		Effect(harness, start, end)
+	{
+		SetMask(std::make_shared<EmptyMask>(harness));
+	}
 };
 
 class BoostEffect : public Effect
@@ -136,4 +154,22 @@ private:
 	std::shared_ptr<Metronome> m_tap;
 	float m_intensity = 0.4f;
 
+};
+
+class CalibrationEffect : public Effect
+{
+public:
+
+	CalibrationEffect(Harness* harness) : Effect(harness, Now(), Now() + std::chrono::seconds(5))
+	{
+		auto xBandMask = std::make_shared<BandMask>(harness, -160, x_axis, 50);
+		auto start = Now();
+		auto end = start + std::chrono::seconds(5);
+		xBandMask->AddDriver([xBandMask, harness, start, end](timestamp t) { Ease<int>(&xBandMask->m_center, t, -160, 160, start, end); });
+
+		SetTexture(std::make_shared<SolidTexture>(harness, RED));
+		SetMask(xBandMask);
+	}
+
+private:
 };

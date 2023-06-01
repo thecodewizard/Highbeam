@@ -12,6 +12,8 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	fireTexture->AddDriver([fireTexture, tap](timestamp t) {
 		Cycle<float>(&fireTexture->m_hsv.h, t, 0.0f, 0.15f, tap->Beat(0), tap->Beats(0), CycleType::RANDOM);
 		});
+
+
 	/*
 	eyes_default
 	eyes_angry
@@ -22,6 +24,9 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	eyes_big
 	eyes_rings
 	*/
+
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(0), tap->Beat(150), "eyes", BLACK)); // overrides the default eye effects
+
 	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(48), tap->Beat(56), "eyes_default"));
 	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(56), tap->Beat(60), "eyes_angry"));
 	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(60), tap->Beat(64), "eyes_default"));
@@ -44,37 +49,24 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 
 	//	0	
 	{
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(0), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(1), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(2), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(2.5), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(3), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(3.5), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(0), tap->Beats(1), "right_paw_1", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(1), tap->Beats(1), "left_paw_1", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(2), tap->Beats(1), "right_paw_2", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(2.5), tap->Beats(1), "left_paw_2", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(3), tap->Beats(1), "right_paw_3", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(3.5), tap->Beats(1), "left_paw_3", BLUE));
 	}
 	// 4
 	{
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(4), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(5), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(6), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
-		er->AddEffect(std::make_shared<Ripple>(harness, tap->Beat(7), tap->Beats(3), harness->GetRandomLoc(true), BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(4), tap->Beats(1), "right_paw_4", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(5), tap->Beats(1), "left_paw_4", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(6), tap->Beats(1), "right_paw_5", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(7), tap->Beats(1), "left_paw_5", BLUE));
 	}
 	//	8	like a small boat
 	{
-
-		{ // blue hand orb
-			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(6), tap->Beat(13));
-			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"), 300);
-
-			orbMask->AddDriver([orbMask, tap](timestamp t) {
-				Ease<float>(&orbMask->m_intensity, t, 0.0f, 1.0f, tap->Beat(6), tap->Beat(8), EaseType::BEIZIER);
-				Ease<float>(&orbMask->m_intensity, t, 1.0f, 0.0f, tap->Beat(11), tap->Beat(13), EaseType::BEIZIER);
-				});
-
-			orbEffect->SetMask(orbMask);
-			orbEffect->SetTexture(blueTexture);
-
-			er->AddEffect(orbEffect);
-		}
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(8), tap->Beat(12), "left_hand", BLUE));
+		er->AddEffect(std::make_shared<GroupSolid>(harness, tap->Beat(8), tap->Beats(12), "right_hand", BLUE));
 
 	}
 	//	12 on the oc-
@@ -88,7 +80,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 			}
 		);
 		twinkle->SetMask(twinkleMask);
-		twinkle->SetMask(std::make_shared<GroupMask>(harness, "right_arm"));
+		twinkle->SetMask(std::make_shared<GroupMask>(harness, "left_hand"));
 		twinkle->SetTexture(blueTexture);
 
 		er->AddEffect(twinkle);
@@ -263,6 +255,24 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 
 	//		I will
 	//	48	scream
+
+	{
+		auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(48), tap->Beat(56));
+		auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"), 300);
+
+		orbEffect->SetMask(orbMask);
+
+		auto blueFireTexture = std::make_shared<SolidTexture>(harness, BLUE);
+		fireTexture->AddDriver([blueFireTexture, tap](timestamp t) {
+			Cycle<float>(&blueFireTexture->m_hsv.h, t, 0.66f, 0.8f, tap->Beat(0), tap->Beats(0), CycleType::RANDOM);
+			});
+
+
+		orbEffect->SetTexture(blueFireTexture);
+
+		er->AddEffect(orbEffect);
+	}
+
 	//		em out
 	//		loud tonight
 	//		can you
@@ -274,7 +284,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 		{ // white left hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(42), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hand"));
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(42), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -286,7 +296,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 		{ // white right hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(43), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"));
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(43), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -616,7 +626,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	// 113 on
 
 	for (int beat = 113; beat < 134; ++beat)
-		er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(beat), tap->Beats(3), harness->GetRandomLoc(true), 1000, 200));
+		er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(beat), tap->Beats(3), harness->GetRandomLoc(), 1000, 200));
 
 
 	// 114 starting right
@@ -624,6 +634,21 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	// 115 now ill
 
 	// 116 be str
+	{
+		auto rightArmFill = std::make_shared<Effect>(harness, tap->Beat(116), tap->Beat(118));
+		rightArmFill->SetTexture(std::make_shared<RadialRainbowTexture>(harness, harness->GetMarker("marker_right_bicep"), y_axis));
+		rightArmFill->SetMask(std::make_shared<GroupMask>(harness, "right_arm"));
+		er->AddEffect(rightArmFill);
+	}
+
+// 77 strong
+
+	{
+		auto rightArmFill = std::make_shared<Effect>(harness, tap->Beat(117), tap->Beat(118));
+		rightArmFill->SetTexture(std::make_shared<RadialRainbowTexture>(harness, harness->GetMarker("marker_left_bicep"), y_axis));
+		rightArmFill->SetMask(std::make_shared<GroupMask>(harness, "left_arm"));
+		er->AddEffect(rightArmFill);
+	}
 
 	er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(116), tap->Beats(2), harness->GetMarker("marker_right_bicep"), 2000, 200, false));
 	// 117 ong

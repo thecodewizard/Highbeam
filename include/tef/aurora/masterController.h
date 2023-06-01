@@ -19,7 +19,7 @@ namespace TEF::Aurora {
 		MasterController();
 		~MasterController();
 
-		bool Start();
+		bool Start(bool cliEnabled = true);
 
 		bool StartEffectController();
 		bool StartHeadset();
@@ -66,6 +66,7 @@ namespace TEF::Aurora {
 		DacMCP3008 m_dac;
 		EffectRunner m_effectRunner;
 		SmartFuse m_smartFuse;
+		//Eyes m_eyes;
 		CLI m_cli;
 
 		std::atomic_bool m_quit = false;

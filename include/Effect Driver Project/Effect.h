@@ -90,13 +90,19 @@ public:
 	void SetMask(std::shared_ptr<Mask> pMask) {
 		m_masks.push_back(pMask);
 	};
+	void ClearMasks()
+	{
+		m_masks.clear();
+	}
 	std::shared_ptr<Mask> GetMask(int index = 0) { return m_masks.at(index); };
 	std::shared_ptr<Texture> GetTexture() { return m_pTexture; };
 
-	void Stop() { m_state = EffectState::STOPPED; };
+	virtual void Stop() { m_state = EffectState::STOPPED; }; // this can be overridden for unstoppable effects XD
 	bool HasStopped() { return m_state == EffectState::STOPPED; };
 	timestamp GetStartTime() { return m_startTime; }
+	timestamp GetEndTime() { return m_endTime; };
 	Harness* GetHarness() { return m_harness; }
+
 
 private:
 
